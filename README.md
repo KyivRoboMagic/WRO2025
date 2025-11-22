@@ -1,8 +1,8 @@
 <img src="./readme images/1 logo.jpg" style="width:100%; height:auto;">
 
-## OBJECT CHALLENGE: https://youtu.be/LZ57Y01bQvU
+## Object Challenge: https://youtu.be/LZ57Y01bQvU
 
-## OPEN CHALLENGE: https://youtu.be/bDnhjbADkbo
+## Open Challenge: https://youtu.be/bDnhjbADkbo
 
 # TABLE OF CONTENTS
 
