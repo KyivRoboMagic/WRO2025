@@ -1,5 +1,9 @@
 <img src="./readme images/1 logo.jpg" style="width:100%; height:auto;">
 
+## OBJECT CHALLENGE: https://youtu.be/LZ57Y01bQvU
+
+## OPEN CHALLENGE: https://youtu.be/bDnhjbADkbo
+
 # TABLE OF CONTENTS
 
 INTRODUCTION — THE CAR THAT THINKS IN ANGLES (page 4)
