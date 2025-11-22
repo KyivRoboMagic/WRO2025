@@ -460,11 +460,11 @@ int main() {
     motor(0);
 
     const std::string pipeline =
-        "libcamerasrc ! "
-        "video/x-raw,width=640,height=480,framerate=100/1 ! "
-        "videoconvert ! video/x-raw,format=BGR ! "
-        "queue max-size-buffers=1 leaky=downstream ! "
-        "appsink drop=true max-buffers=1 sync=false";
+    "libcamerasrc ! "
+    "video/x-raw,width=640,height=480,framerate=30/1 ! "
+    "videoconvert ! video/x-raw,format=BGR ! "
+    "queue max-size-buffers=1 leaky=downstream ! "
+    "appsink drop=true max-buffers=1 sync=false";
 
     cv::VideoCapture cap(pipeline, cv::CAP_GSTREAMER);
     if (!cap.isOpened()) { std::cerr << "camera open failed\n"; return 2; }
@@ -563,7 +563,12 @@ int main() {
 
 	    int idx = -1; long long len = 2e18;
 	    for (int i = 0; i < lines.size(); i++) {
-		long long len_current = RayToLineIntersectLength(lines[i].second, cv::Point2d(310, 310), 0.0);
+		long long len_current;
+		if (direction) {
+		    len_current = RayToLineIntersectLength(lines[i].second, cv::Point2d(310, 310), 0.0);
+		} else {
+		    len_current = RayToLineIntersectLength(lines[i].second, cv::Point2d(310, 310), M_PI);
+		}
 
 		if (len_current == -1) continue;
 		if (len > abs(len_current)) {
@@ -598,25 +603,49 @@ int main() {
 	    cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
 	    process_hsv(hsv.data, mask.data);
 	    
-	    int l = 0, r = 0, m_th = 120;
-	    for (int i = 0; i < 240; i++) {
-		for (int j = 0; j < 640; j++) {
+	    
+	    double l = 0, r = 0, m = 0;
+	    for (int i = 0; i < 160; i++) {
+		for (int j = 0; j < 100; j++) {
 		    if (mask_p[640 * i + j] == 255) {
-			if (j < 320 - m_th) l++;
-			else if (320 + m_th < j) r++;
+			l += 1;
 		    }
 		}
 	    }
-	    int err = 0, errold = 0;
-	    double dir;
-	    if (direction) {
-		err = l-20000;
-	    } else {
-		err = 20000-r;
+	    l /= 160 * 100;
+	    
+	    for (int i = 0; i < 160; i++) {
+		for (int j = 540; j < 640; j++) {
+		    if (mask_p[640 * i + j] == 255) {
+			r += 1;
+		    }
+		}
 	    }
-	    double kp1 = 0.00005;
-	    dir = 0.48 + err * kp1;
+	    r /= 160 * 100;
+	    
+	    for (int i = 0; i < 160; i++) {
+		for (int j = 100; j < 540; j++) {
+		    if (mask_p[640 * i + j] == 255) {
+			m += 1;
+		    }
+		}
+	    }
+	    m /= 160 * 440;
+	    //std::cout << m << "\n";
+	    
+	    double dir = 0.48;
+	    double err = 0, errold = 0;
+	    if (direction) {
+		err = l-0.7;
+	    } else {
+		err = 0.7-r;
+	    }
+	    dir = 0.48 + err * 0.4;
 	    dir = std::min(std::max(dir, 0.42), 0.54);
+	    if (m > 0.3) {
+		if (direction) dir = 0.56;
+		else dir = 0.4;
+	    }
 	    //std::cout << l << " " << r << " " << dir << " " << (ct1 - ct0) * 1e-6 << "\n";
 	    servo(dir);
 	    errold = err;
@@ -629,7 +658,7 @@ int main() {
 	    endgame = true;
 	    endTimer = now_ns();
 	}
-	if (endgame && now_ns() - endTimer >= 2000e6) running = false;
+	if (endgame && now_ns() - endTimer >= 2500e6) running = false;
 
 	if (now_ns() - loop_t0 >= 180e9) running = false;
 	
